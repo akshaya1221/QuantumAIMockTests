@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from authentication.security import decode_access_token
-from database.connection import get_database
 from models.student import StudentSelection
+from storage import get_user_by_email, update_student_selection
 
 
 router = APIRouter(prefix="/api/student", tags=["Student"])
@@ -34,24 +34,7 @@ def save_student_selection(
     email: str = Depends(get_logged_in_user_email),
 ):
     """Save or update the logged-in student's selected subject and topic."""
-    database = get_database()
-    users_collection = database["users"]
-
-    result = users_collection.update_one(
-        {"email": email},
-        {
-            "$set": {
-                "selected_subject": selection.subject,
-                "selected_topic": selection.topic,
-            }
-        },
-    )
-
-    if result.matched_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+    update_student_selection(email, selection.subject, selection.topic)
 
     return {
         "message": "Selection saved successfully",
@@ -63,13 +46,7 @@ def save_student_selection(
 @router.get("/selection")
 def get_student_selection(email: str = Depends(get_logged_in_user_email)):
     """Return the logged-in student's saved subject and topic."""
-    database = get_database()
-    users_collection = database["users"]
-
-    user = users_collection.find_one(
-        {"email": email},
-        {"_id": 0, "selected_subject": 1, "selected_topic": 1},
-    )
+    user = get_user_by_email(email)
 
     if not user:
         raise HTTPException(

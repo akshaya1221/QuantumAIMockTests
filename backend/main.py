@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from database.connection import check_database_connection
-from routes.ai import router as ai_router
 from routes.auth import router as auth_router
 from routes.student import router as student_router
 
@@ -38,8 +36,6 @@ app.include_router(auth_router)
 # Register protected student routes for study selections.
 app.include_router(student_router)
 
-# Register protected AI tutor routes.
-app.include_router(ai_router)
 
 
 # Basic health check route.
@@ -48,9 +44,3 @@ app.include_router(ai_router)
 def health_check():
     return {"message": "Quantum AI IIT JEE Backend is running"}
 
-
-# Phase 2 database status route.
-# This route checks MongoDB safely and returns a friendly message.
-@app.get("/api/db/status")
-def database_status():
-    return check_database_connection()

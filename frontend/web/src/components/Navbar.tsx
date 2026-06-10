@@ -5,9 +5,7 @@ import logo from "../assets/logo.png";
 const navItems = [
   { label: "Home", to: "/" },
   { label: "Courses", to: "/courses" },
-  { label: "Mock Tests", to: "/mock-test" },
-  { label: "AI Tutor", to: "/ai-tutor" },
-  { label: "AI Coaching", to: "/#agents" },
+  { label: "Mock Tests", to: "/mock-test" },  { label: "AI Coaching", to: "/#agents" },
   { label: "Study Materials", to: "/study-materials" },
   { label: "Rank Predictor", to: "/rank-predictor" },
   { label: "Results", to: "/results" },

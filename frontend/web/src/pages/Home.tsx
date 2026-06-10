@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
 import {
-  ArrowRight,
   CalendarDays,
   Check,
   FileCheck2,
@@ -10,7 +9,6 @@ import {
   HelpCircle,
   Map,
   Repeat2,
-  Send,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -74,7 +72,7 @@ const pricingPlans = [
     name: "Starter",
     price: "₹0",
     period: "forever",
-    features: ["AI Tutor limited", "5 Mock Tests", "Basic Study Materials"],
+    features: ["5 Mock Tests", "Basic Study Materials", "Starter analytics"],
   },
   {
     name: "Pro",
@@ -158,14 +156,11 @@ function Home() {
           </h1>
           <p className="hero-subtitle">
             VALLURI™ pairs world-class faculty pedagogy with an autonomous AI
-            tutor that plans, teaches, drills, and adapts — every single day —
+            learning system that plans, teaches, drills, and adapts — every single day —
             until you crack JEE Mains &amp; Advanced.
           </p>
           <div className="hero-actions">
-            <Link to="/ai-tutor" className="btn btn-primary">
-              Try the AI Tutor <ArrowRight size={18} />
-            </Link>
-            <a href="#programs" className="btn btn-outline">
+                        <a href="#programs" className="btn btn-outline">
               Explore Programs
             </a>
           </div>
@@ -314,57 +309,13 @@ function Home() {
           </div>
         </div>
       </section>
-
-      <section className="tutor-demo-section" id="ai-tutor-demo">
-        <div className="section-inner demo-inner">
-          <p className="pill demo-badge">
-            <Sparkles size={14} /> Live Demo
-          </p>
-          <h2 className="display-heading dark-heading">
-            Ask the AI tutor <span>anything.</span>
-          </h2>
-          <p className="demo-copy">
-            Physics, Chemistry, or Maths — Mains or Advanced. Get a
-            step-by-step answer instantly.
-          </p>
-
-          <div className="demo-panel">
-            <div className="demo-screen">
-              <span className="demo-logo">
-                <Sparkles size={30} />
-              </span>
-              <p>Try a sample question, or type your own JEE doubt below.</p>
-              <div className="prompt-chips">
-                <button type="button">Derive the formula for the Bohr radius.</button>
-                <button type="button">Solve: ∫ x·e^(x²) dx</button>
-                <button type="button">
-                  Explain rolling motion of a solid sphere on an incline.
-                </button>
-                <button type="button">
-                  Give me a 7-day revision plan for Electrochemistry.
-                </button>
-              </div>
-            </div>
-            <form className="demo-input">
-              <input
-                aria-label="Ask a Physics, Chemistry or Maths question"
-                placeholder="Ask a Physics, Chemistry or Maths question..."
-              />
-              <button type="submit" aria-label="Send question">
-                <Send size={22} />
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-
       <section className="final-cta" id="contact">
         <GraduationCap className="cta-icon" size={44} />
         <h2>
           Your IIT journey starts <span>today.</span>
         </h2>
         <p>
-          Start with the AI tutor, take a diagnostic mock, and let VALLURI build
+          Start with a diagnostic mock, and let VALLURI build
           the next week of work around your actual gaps.
         </p>
         <div className="hero-actions">

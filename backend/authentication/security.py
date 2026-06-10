@@ -12,7 +12,7 @@ load_dotenv()
 
 
 # Passlib handles secure password hashing for us.
-# bcrypt means plain passwords are never saved in MongoDB.
+# bcrypt means plain passwords are never saved directly.
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 

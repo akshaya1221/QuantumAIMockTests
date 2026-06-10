@@ -96,7 +96,6 @@ function Login({ initialMode = "login" }: LoginProps) {
           </p>
 
           <div className="auth-mini-stats" aria-hidden="true">
-            <span>AI Tutor</span>
             <span>Mock Tests</span>
             <span>Rank Tools</span>
           </div>

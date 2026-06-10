@@ -1,4 +1,6 @@
 import type { ReactElement } from "react";
+// @ts-ignore
+import ChatbotWidget from "./components/ChatbotWidget";
 import {
   BrowserRouter,
   Navigate,
@@ -7,7 +9,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import AITutor from "./pages/AITutor";
 import About from "./pages/About";
 import Analytics from "./pages/Analytics";
 import Dashboard from "./pages/Dashboard";
@@ -58,7 +59,6 @@ function AppShell() {
           }
         />
         <Route path="/mock-test" element={<MockTest />} />
-        <Route path="/ai-tutor" element={<AITutor />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/rank-predictor" element={<RankPredictor />} />
         <Route path="/results" element={<Results />} />
@@ -75,6 +75,7 @@ function AppShell() {
         <Route path="/refund-cancellation" element={<RefundCancellation />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
       </Routes>
+      <ChatbotWidget />  
     </div>
   );
 }

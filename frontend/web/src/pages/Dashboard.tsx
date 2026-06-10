@@ -1,8 +1,6 @@
 import {
-  ArrowRight,
   BarChart3,
   BookOpen,
-  Brain,
   Clock3,
   FileText,
   GraduationCap,
@@ -71,7 +69,7 @@ function Dashboard() {
             <p>
               Continue your JEE preparation journey with Valluri. Stay balanced
               across Physics, Chemistry and Mathematics with guided practice,
-              mocks, AI support and revision.
+              mocks and revision.
             </p>
 
             <div className="student-hero-actions">
@@ -80,9 +78,6 @@ function Dashboard() {
               </Link>
               <Link to="/mock-test" className="btn btn-outline">
                 Take Mock Test
-              </Link>
-              <Link to="/ai-tutor" className="btn btn-outline">
-                Ask AI Tutor
               </Link>
             </div>
           </div>
@@ -142,20 +137,6 @@ function Dashboard() {
         </section>
 
         <section className="dashboard-split">
-          <article className="ai-tutor-highlight">
-            <div>
-              <p className="dashboard-label">AI Tutor</p>
-              <h2>Ask doubts instantly</h2>
-              <p>
-                Get step-by-step explanations for Physics, Chemistry and
-                Mathematics in a JEE-focused teaching style.
-              </p>
-            </div>
-            <Brain size={48} />
-            <Link to="/ai-tutor" className="btn btn-primary">
-              Open AI Tutor <ArrowRight size={18} />
-            </Link>
-          </article>
 
           <article className="rank-mini-card">
             <p className="dashboard-label">Results & Rank</p>
@@ -216,8 +197,7 @@ function Dashboard() {
             <p className="dashboard-label">Profile</p>
             <h2>Your Valluri learning path is active</h2>
             <p>
-              Keep practising daily, take weekly mocks and use the AI tutor for
-              every doubt before it becomes a weak topic.
+              Keep practising daily, take weekly mocks and revise every doubt before it becomes a weak topic.
             </p>
           </div>
           <div className="profile-strip-actions">
@@ -225,7 +205,7 @@ function Dashboard() {
               <TrendingUp size={18} /> Weekly streak: 5 days
             </span>
             <span>
-              <MessageCircleQuestion size={18} /> Doubts solved: 42
+              <MessageCircleQuestion size={18} /> Doubts reviewed: 42
             </span>
           </div>
         </section>
