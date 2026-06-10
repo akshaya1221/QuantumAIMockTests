@@ -1,5 +1,4 @@
-import type { ReactElement } from "react";
-// @ts-ignore
+﻿import type { ReactElement } from "react";
 import ChatbotWidget from "./components/ChatbotWidget";
 import {
   BrowserRouter,
@@ -75,7 +74,7 @@ function AppShell() {
         <Route path="/refund-cancellation" element={<RefundCancellation />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
       </Routes>
-      <ChatbotWidget />  
+      {!isDashboard && <ChatbotWidget />}
     </div>
   );
 }
