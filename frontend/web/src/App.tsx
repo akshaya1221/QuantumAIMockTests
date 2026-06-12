@@ -40,7 +40,7 @@ function ProtectedRoute({ children }: { children: ReactElement }) {
 
 function AppShell() {
   const location = useLocation();
-  const isDashboard = location.pathname === "/dashboard";
+  const isDashboard = location.pathname.startsWith("/dashboard");
 
   return (
     <div className="app">
@@ -54,6 +54,30 @@ function AppShell() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/mock-tests"
+          element={
+            <ProtectedRoute>
+              <MockTest />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/rank-predictor"
+          element={
+            <ProtectedRoute>
+              <RankPredictor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/study-materials"
+          element={
+            <ProtectedRoute>
+              <StudyMaterials />
             </ProtectedRoute>
           }
         />
