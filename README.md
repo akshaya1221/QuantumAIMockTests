@@ -10,7 +10,7 @@ This repository hosts a multi-tier codebase containing a fully functional **Fast
 
 ```mermaid
 graph TD
-    subgraph Client Tier [Web Frontend]
+    subgraph ClientTier ["Client Tier (Web Frontend)"]
         Vite[Vite Dev Server]
         React[React 19 SPA]
         Router[React Router v7]
@@ -20,7 +20,7 @@ graph TD
         React --> Tailwind
     end
 
-    subgraph Service Tier [FastAPI Backend]
+    subgraph ServiceTier ["Service Tier (FastAPI Backend)"]
         API[FastAPI Router]
         Auth[JWT Security / Bcrypt]
         Exam[Exam & Grading Engine]
@@ -34,20 +34,20 @@ graph TD
         Progress --> DB_Adapter
     end
 
-    subgraph Storage Tier [Database]
+    subgraph StorageTier ["Storage Tier (Database)"]
         SQLite[(quantum_ai_jee.db)]
         DB_Adapter --> SQLite
     end
 
-    subgraph Agentic AI Tier [Conceptual Roadmap]
+    subgraph AgenticAITier ["Agentic AI Tier (Conceptual Roadmap)"]
         Planner[Adaptive Planner Agent]
         Solver[Doubt Solver Agent]
         Predictor[Rank Predictor Agent]
         Coach[Revision Coach]
     end
 
-    Client Tier -- REST APIs --> API
-    API -. Future Integration .-> Agentic AI Tier
+    ClientTier -->|REST APIs| API
+    API -.->|Future Integration| AgenticAITier
 ```
 
 ---
