@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 from sqlmodel import Session, select, SQLModel
 
 # Import routes
-from backend.routes import auth, exams, progress, admin, video_sessions
+from routes import admin, ai, auth, exam, progress, student, video_sessions
 # Import models
-from backend.models.models import User, Question, ExamAttempt
-from backend.models.video_session import VideoSession, LiveDoubtSession, AITeachingSession
-from backend.db import engine, get_session
-from backend.storage import Storage
+from models.db_models import ExamAttempt, Question, User, UserActivity
+from models.video_session import AITeachingSession, LiveDoubtSession, VideoSession
+from db import engine
+from storage import create_default_questions
 
 load_dotenv()
 
@@ -24,10 +24,7 @@ async def lifespan(app: FastAPI):
     # Seed initial data if database is empty
     session = Session(engine)
     try:
-        existing_questions = session.exec(select(Question)).first()
-        if not existing_questions:
-            storage = Storage()
-            storage.seed_questions()
+        create_default_questions(session)
     finally:
         session.close()
     
@@ -59,9 +56,11 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router)
-app.include_router(exams.router)
+app.include_router(exam.router)
 app.include_router(progress.router)
 app.include_router(admin.router)
+app.include_router(student.router)
+app.include_router(ai.router)
 app.include_router(video_sessions.router)
 
 # Health check endpoint

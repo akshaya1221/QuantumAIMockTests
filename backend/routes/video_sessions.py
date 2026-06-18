@@ -1,15 +1,65 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List
+from pydantic import BaseModel, Field
 from datetime import datetime
-from backend.authentication.auth import get_current_user
-from backend.storage import Storage
-from backend.models.video_session import VideoSession, LiveDoubtSession, AITeachingSession
-from backend.models.models import User
 from sqlmodel import select, Session
-from backend.db import get_session
+
+from db import get_session
+from models.db_models import User
+from models.video_session import AITeachingSession, LiveDoubtSession, VideoSession
+from routes.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/videos", tags=["Video Sessions"])
-storage = Storage()
+
+
+class VideoLessonCreate(BaseModel):
+    title: str
+    subject: str
+    topic: str
+    video_url: str
+    duration_minutes: int
+    description: str | None = None
+    thumbnail_url: str | None = None
+    instructor_name: str | None = None
+
+
+class VideoProgressUpdate(BaseModel):
+    watched_duration: int = Field(..., ge=0)
+
+
+class DoubtSessionCreate(BaseModel):
+    subject: str
+    topic: str
+    doubt_description: str
+    scheduled_time: datetime | None = None
+
+
+class DoubtSessionAccept(BaseModel):
+    video_call_url: str | None = None
+
+
+class DoubtSessionComplete(BaseModel):
+    resolution: str
+
+
+class DoubtSessionRating(BaseModel):
+    rating: float = Field(..., ge=1, le=5)
+    feedback: str | None = None
+
+
+class AITeachingSessionCreate(BaseModel):
+    subject: str
+    topic: str
+    class_id: str | None = None
+    session_type: str = "interactive"
+
+
+class AITeachingMessage(BaseModel):
+    user_message: str
+
+
+class AITeachingComplete(BaseModel):
+    comprehension_level: float | None = None
+    session_rating: float | None = None
 
 # Sample video data
 SAMPLE_VIDEOS = [
@@ -79,14 +129,7 @@ SAMPLE_VIDEOS = [
 
 @router.post("/lessons")
 def create_video_lesson(
-    title: str,
-    subject: str,
-    topic: str,
-    video_url: str,
-    duration_minutes: int,
-    description: str = None,
-    thumbnail_url: str = None,
-    instructor_name: str = None,
+    payload: VideoLessonCreate,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -96,14 +139,7 @@ def create_video_lesson(
     
     video_session = VideoSession(
         user_id=current_user.id,
-        title=title,
-        subject=subject,
-        topic=topic,
-        video_url=video_url,
-        duration_minutes=duration_minutes,
-        description=description,
-        thumbnail_url=thumbnail_url,
-        instructor_name=instructor_name
+        **payload.dict()
     )
     session.add(video_session)
     session.commit()
@@ -158,7 +194,7 @@ def get_video_lesson(
 @router.post("/lessons/{lesson_id}/progress")
 def update_video_progress(
     lesson_id: str,
-    watched_duration: int,
+    payload: VideoProgressUpdate,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -170,8 +206,8 @@ def update_video_progress(
     if not lesson:
         raise HTTPException(status_code=404, detail="Video lesson not found")
     
-    lesson.watched_duration = watched_duration
-    lesson.progress_percentage = min(100, (watched_duration / (lesson.duration_minutes * 60)) * 100)
+    lesson.watched_duration = payload.watched_duration
+    lesson.progress_percentage = min(100, (payload.watched_duration / (lesson.duration_minutes * 60)) * 100)
     
     if lesson.progress_percentage >= 90:
         lesson.is_completed = True
@@ -222,20 +258,17 @@ def get_my_video_progress(
 
 @router.post("/doubts/sessions")
 def create_doubt_session(
-    subject: str,
-    topic: str,
-    doubt_description: str,
-    scheduled_time: datetime = None,
+    payload: DoubtSessionCreate,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """Create a new 1:1 doubt resolution session request"""
     doubt_session = LiveDoubtSession(
         student_id=current_user.id,
-        subject=subject,
-        topic=topic,
-        doubt_description=doubt_description,
-        scheduled_time=scheduled_time,
+        subject=payload.subject,
+        topic=payload.topic,
+        doubt_description=payload.doubt_description,
+        scheduled_time=payload.scheduled_time,
         status="pending"
     )
     session.add(doubt_session)
@@ -285,7 +318,7 @@ def get_doubt_session(
 @router.post("/doubts/sessions/{session_id}/accept")
 def accept_doubt_session(
     session_id: str,
-    video_call_url: str = None,
+    payload: DoubtSessionAccept | None = None,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -303,8 +336,8 @@ def accept_doubt_session(
     doubt_session.status = "active"
     doubt_session.instructor_id = current_user.id
     doubt_session.start_time = datetime.utcnow()
-    if video_call_url:
-        doubt_session.video_call_url = video_call_url
+    if payload and payload.video_call_url:
+        doubt_session.video_call_url = payload.video_call_url
     else:
         # Generate a dummy video call URL
         doubt_session.video_call_url = f"https://meet.jit.si/VALLURI_{session_id[:8]}"
@@ -322,7 +355,7 @@ def accept_doubt_session(
 @router.post("/doubts/sessions/{session_id}/complete")
 def complete_doubt_session(
     session_id: str,
-    resolution: str,
+    payload: DoubtSessionComplete,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -339,7 +372,7 @@ def complete_doubt_session(
     
     doubt_session.status = "completed"
     doubt_session.end_time = datetime.utcnow()
-    doubt_session.resolution = resolution
+    doubt_session.resolution = payload.resolution
     
     session.add(doubt_session)
     session.commit()
@@ -353,15 +386,11 @@ def complete_doubt_session(
 @router.post("/doubts/sessions/{session_id}/rate")
 def rate_doubt_session(
     session_id: str,
-    rating: float,
-    feedback: str = None,
+    payload: DoubtSessionRating,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """Rate a completed doubt resolution session"""
-    if not (1 <= rating <= 5):
-        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
-    
     doubt_session = session.exec(
         select(LiveDoubtSession).where(LiveDoubtSession.id == session_id)
     ).first()
@@ -372,14 +401,14 @@ def rate_doubt_session(
     if doubt_session.student_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the student can rate this session")
     
-    doubt_session.rating = rating
-    doubt_session.feedback = feedback
+    doubt_session.rating = payload.rating
+    doubt_session.feedback = payload.feedback
     
     session.add(doubt_session)
     session.commit()
     session.refresh(doubt_session)
     
-    return {"message": "Session rated successfully", "rating": rating}
+    return {"message": "Session rated successfully", "rating": payload.rating}
 
 @router.get("/doubts/pending")
 def get_pending_doubt_sessions(
@@ -400,20 +429,17 @@ def get_pending_doubt_sessions(
 
 @router.post("/ai-teaching/sessions")
 def create_ai_teaching_session(
-    subject: str,
-    topic: str,
-    class_id: str = None,
-    session_type: str = "interactive",
+    payload: AITeachingSessionCreate,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """Create a new AI teaching session"""
     ai_session = AITeachingSession(
         user_id=current_user.id,
-        subject=subject,
-        topic=topic,
-        class_id=class_id,
-        session_type=session_type
+        subject=payload.subject,
+        topic=payload.topic,
+        class_id=payload.class_id,
+        session_type=payload.session_type
     )
     session.add(ai_session)
     session.commit()
@@ -448,7 +474,7 @@ def get_ai_teaching_session(
 @router.post("/ai-teaching/sessions/{session_id}/message")
 def send_message_to_ai(
     session_id: str,
-    user_message: str,
+    payload: AITeachingMessage,
     current_user: User = Depends(get_current_user),
     session_db: Session = Depends(get_session)
 ):
@@ -463,14 +489,14 @@ def send_message_to_ai(
     if ai_session.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    ai_explanation = generate_ai_explanation(ai_session.subject, ai_session.topic, user_message)
+    ai_explanation = generate_ai_explanation(ai_session.subject, ai_session.topic, payload.user_message)
     
     if not isinstance(ai_session.user_questions, list):
         ai_session.user_questions = []
     if not isinstance(ai_session.ai_explanations, list):
         ai_session.ai_explanations = []
     
-    ai_session.user_questions.append(user_message)
+    ai_session.user_questions.append(payload.user_message)
     ai_session.ai_explanations.append(ai_explanation)
     ai_session.messages_count += 1
     
@@ -479,7 +505,7 @@ def send_message_to_ai(
     session_db.refresh(ai_session)
     
     return {
-        "user_message": user_message,
+        "user_message": payload.user_message,
         "ai_response": ai_explanation,
         "messages_count": ai_session.messages_count
     }
@@ -487,8 +513,7 @@ def send_message_to_ai(
 @router.post("/ai-teaching/sessions/{session_id}/complete")
 def complete_ai_teaching_session(
     session_id: str,
-    comprehension_level: float = None,
-    session_rating: float = None,
+    payload: AITeachingComplete,
     current_user: User = Depends(get_current_user),
     session_db: Session = Depends(get_session)
 ):
@@ -504,8 +529,8 @@ def complete_ai_teaching_session(
         raise HTTPException(status_code=403, detail="Access denied")
     
     ai_session.completed_at = datetime.utcnow()
-    ai_session.comprehension_level = comprehension_level
-    ai_session.session_rating = session_rating
+    ai_session.comprehension_level = payload.comprehension_level
+    ai_session.session_rating = payload.session_rating
     
     session_db.add(ai_session)
     session_db.commit()
@@ -513,8 +538,8 @@ def complete_ai_teaching_session(
     
     return {
         "message": "AI teaching session completed",
-        "comprehension_level": comprehension_level,
-        "session_rating": session_rating
+        "comprehension_level": payload.comprehension_level,
+        "session_rating": payload.session_rating
     }
 
 @router.get("/ai-teaching/my-sessions")

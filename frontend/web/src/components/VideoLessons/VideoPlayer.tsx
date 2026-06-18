@@ -112,6 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const progressPercentage = (currentTime / (duration * 60)) * 100;
+  const isEmbed = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') || videoUrl.includes('embed');
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -124,6 +125,29 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
+      {isEmbed ? (
+        <div className="relative aspect-video">
+          <iframe
+            src={videoUrl}
+            title={title}
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+          <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start pointer-events-none">
+            <h3 className="text-white font-semibold text-lg line-clamp-2 flex-1">{title}</h3>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-white hover:bg-red-600 p-2 rounded-full transition flex-shrink-0 pointer-events-auto"
+                title="Close lesson"
+              >
+                <X size={24} />
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
       <div className="relative group">
         <video
           ref={videoRef}
@@ -233,6 +257,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

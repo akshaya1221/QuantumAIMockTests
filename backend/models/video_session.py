@@ -1,3 +1,4 @@
+from sqlalchemy import Column, JSON
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
@@ -52,10 +53,10 @@ class AITeachingSession(SQLModel, table=True):
     messages_count: int = 0
     duration_seconds: int = 0
     learning_progress: float = 0.0
-    concepts_covered: list = Field(default_factory=list)
-    user_questions: list = Field(default_factory=list)
-    ai_explanations: list = Field(default_factory=list)
-    comprehension_level: Optional[float] = None
+    concepts_covered: list[str] = Field(sa_column=Column(JSON), default_factory=list)
+    user_questions: list[str] = Field(sa_column=Column(JSON), default_factory=list)
+    ai_explanations: list[str] = Field(sa_column=Column(JSON), default_factory=list)
+    comprehension_level: Optional[float] = None 
     session_rating: Optional[float] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = None

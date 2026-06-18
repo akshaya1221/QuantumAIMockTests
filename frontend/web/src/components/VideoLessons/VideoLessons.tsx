@@ -1,28 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Play, Clock, User, Search, Filter, ChevronDown } from 'lucide-react';
+import { BookOpen, Play, Clock, User, Search, ChevronDown } from 'lucide-react';
+import VirtualAgent from '../AITeaching/VirtualAgent';
+import { api, type VideoLesson } from '../../services/api';
 import VideoPlayer from './VideoPlayer';
 
-interface Lesson {
-  id: string;
-  title: string;
-  subject: string;
-  topic: string;
-  duration_minutes: number;
-  description: string;
-  thumbnail_url: string;
-  instructor_name: string;
-  is_completed: boolean;
-  progress_percentage: number;
-}
-
 const VideoLessons: React.FC = () => {
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [filteredLessons, setFilteredLessons] = useState<Lesson[]>([]);
-  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [lessons, setLessons] = useState<VideoLesson[]>([]);
+  const [filteredLessons, setFilteredLessons] = useState<VideoLesson[]>([]);
+  const [selectedLesson, setSelectedLesson] = useState<VideoLesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [sortBy, setSortBy] = useState<'recent' | 'progress' | 'duration'>('recent');
+  const [aiSessionId, setAiSessionId] = useState('');
+  const [showAiTutor, setShowAiTutor] = useState(false);
 
   useEffect(() => {
     fetchLessons();
@@ -30,14 +21,7 @@ const VideoLessons: React.FC = () => {
 
   const fetchLessons = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8000/api/videos/lessons', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
+      const data = await api.getVideoLessons();
       setLessons(Array.isArray(data) ? data : []);
       setFilteredLessons(Array.isArray(data) ? data : []);
       setLoading(false);
@@ -84,29 +68,29 @@ const VideoLessons: React.FC = () => {
   const handleProgressUpdate = async (watchedDuration: number) => {
     if (selectedLesson) {
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(
-          `http://localhost:8000/api/videos/lessons/${selectedLesson.id}/progress`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ watched_duration: watchedDuration })
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setSelectedLesson(prev => prev ? {
-            ...prev,
-            progress_percentage: data.progress_percentage,
-            is_completed: data.is_completed
-          } : null);
-        }
+        const data = await api.updateVideoProgress(selectedLesson.id, watchedDuration);
+        setSelectedLesson(prev => prev ? {
+          ...prev,
+          progress_percentage: data.progress_percentage,
+          is_completed: data.is_completed
+        } : null);
       } catch (error) {
         console.error('Error updating progress:', error);
       }
+    }
+  };
+
+  const openLesson = async (lesson: VideoLesson) => {
+    setSelectedLesson(lesson);
+    setShowAiTutor(false);
+    try {
+      const session = await api.createAITeachingSession(lesson.subject, lesson.topic);
+      setAiSessionId(session.session_id);
+      setShowAiTutor(true);
+    } catch (error) {
+      console.error('Error starting AI teaching session:', error);
+      setAiSessionId(`local_${Date.now()}`);
+      setShowAiTutor(true);
     }
   };
 
@@ -131,7 +115,7 @@ const VideoLessons: React.FC = () => {
           </button>
 
           <VideoPlayer
-            videoUrl={selectedLesson.thumbnail_url}
+            videoUrl={selectedLesson.video_url}
             title={selectedLesson.title}
             duration={selectedLesson.duration_minutes}
             onProgress={handleProgressUpdate}
@@ -183,6 +167,15 @@ const VideoLessons: React.FC = () => {
               <p className="text-gray-700 leading-relaxed">{selectedLesson.description}</p>
             </div>
           </div>
+
+          {showAiTutor && (
+            <VirtualAgent
+              subject={selectedLesson.subject}
+              topic={selectedLesson.topic}
+              sessionId={aiSessionId}
+              onClose={() => setShowAiTutor(false)}
+            />
+          )}
         </div>
       </div>
     );
@@ -277,7 +270,7 @@ const VideoLessons: React.FC = () => {
             {filteredLessons.map((lesson) => (
               <div
                 key={lesson.id}
-                onClick={() => setSelectedLesson(lesson)}
+                onClick={() => openLesson(lesson)}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:scale-105 duration-300"
               >
                 {/* Thumbnail */}

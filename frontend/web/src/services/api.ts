@@ -59,6 +59,46 @@ export interface StudentActivity {
   score?: number;
 }
 
+export interface VideoLesson {
+  id: string;
+  title: string;
+  subject: string;
+  topic: string;
+  video_url: string;
+  duration_minutes: number;
+  description: string;
+  thumbnail_url: string;
+  instructor_name: string;
+  is_completed: boolean;
+  progress_percentage: number;
+}
+
+export interface DoubtSessionRequest {
+  subject: string;
+  topic: string;
+  doubt_description: string;
+  scheduled_time?: string;
+}
+
+export interface DoubtSessionResponse {
+  message: string;
+  session_id: string;
+  status: string;
+}
+
+export interface AITeachingSessionResponse {
+  message: string;
+  session_id: string;
+  subject: string;
+  topic: string;
+}
+
+export interface AITeachingMessageResponse {
+  user_message: string;
+  ai_response: string;
+  messages_count: number;
+}
+
 class APIService {
   private getHeaders(): Record<string, string> {
     const token = localStorage.getItem("access_token");
@@ -195,6 +235,78 @@ class APIService {
 
     const response = await fetch(`${API_BASE_URL}/exams/leaderboard?${params}`, {
       headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Video lessons and teaching endpoints
+  async getVideoLessons(subject?: string, topic?: string): Promise<VideoLesson[]> {
+    const params = new URLSearchParams();
+    if (subject) params.append("subject", subject);
+    if (topic) params.append("topic", topic);
+
+    const query = params.toString();
+    const response = await fetch(`${API_BASE_URL}/videos/lessons${query ? `?${query}` : ""}`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateVideoProgress(lessonId: string, watchedDuration: number) {
+    const response = await fetch(`${API_BASE_URL}/videos/lessons/${lessonId}/progress`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ watched_duration: watchedDuration }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async createDoubtSession(payload: DoubtSessionRequest): Promise<DoubtSessionResponse> {
+    const response = await fetch(`${API_BASE_URL}/videos/doubts/sessions`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return this.handleResponse(response);
+  }
+
+  async createAITeachingSession(
+    subject: string,
+    topic: string,
+    sessionType: string = "ppt_explainer",
+  ): Promise<AITeachingSessionResponse> {
+    const response = await fetch(`${API_BASE_URL}/videos/ai-teaching/sessions`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ subject, topic, session_type: sessionType }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async sendAITeachingMessage(
+    sessionId: string,
+    userMessage: string,
+  ): Promise<AITeachingMessageResponse> {
+    const response = await fetch(`${API_BASE_URL}/videos/ai-teaching/sessions/${sessionId}/message`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ user_message: userMessage }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async completeAITeachingSession(
+    sessionId: string,
+    comprehensionLevel?: number,
+    sessionRating?: number,
+  ) {
+    const response = await fetch(`${API_BASE_URL}/videos/ai-teaching/sessions/${sessionId}/complete`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        comprehension_level: comprehensionLevel,
+        session_rating: sessionRating,
+      }),
     });
     return this.handleResponse(response);
   }
