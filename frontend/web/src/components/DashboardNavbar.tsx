@@ -8,6 +8,7 @@ import {
   Gauge,
   LogOut,
   MessageCircleQuestion,
+  Sparkles,
   TrendingUp,
   UserRound,
   Video,
@@ -31,6 +32,7 @@ const dashboardNavItems: DashboardNavItem[] = [
   { icon: TrendingUp, label: "Rank Predictor", to: "/dashboard/rank-predictor" },
   { icon: Video, label: "Video Lessons", to: "/dashboard/ai-classroom" },
   { icon: MessageCircleQuestion, label: "Doubts", to: "/dashboard/doubts" },
+  { icon: Sparkles, label: "AI Coaching", to: "/dashboard/ai-coaching" },
   { icon: BarChart3, label: "Study Materials", to: "/dashboard/study-materials" },
   { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
 ];
@@ -118,7 +120,6 @@ function DashboardNavbar({ sidebarCollapsed, setSidebarCollapsed }: DashboardNav
       notifications.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
     );
   };
-
   return (
     <>
       <aside className="dashboard-sidebar" aria-label="Student dashboard sidebar">

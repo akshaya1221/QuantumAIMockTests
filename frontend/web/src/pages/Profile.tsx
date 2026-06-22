@@ -4,70 +4,81 @@ import {
   Crown,
   GraduationCap,
   Mail,
-  MapPin,
-  Phone,
   Settings,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { api } from "../services/api";
+import type { User } from "../services/api";
 
 function Profile() {
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    class_level: string;
-    target_exam: string;
-  } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("current_user");
-    if (storedUser) {
+    async function loadUser() {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error("Error parsing user from localStorage", err);
+        const currentUser = await api.getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error("Failed to load user:", error);
+        // Fall back to localStorage
+        const storedUser = localStorage.getItem("current_user");
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } finally {
+        setLoading(false);
       }
     }
+
+    loadUser();
   }, []);
 
-  const name = user?.name || "Aspirant Sharma";
-  const email = user?.email || "aspirant@valluri.io";
-  const classLevel = user?.class_level || "XII";
-  const targetExam = user?.target_exam || "JEE Advanced 2026";
-  const avatarLetter = name.trim().charAt(0).toUpperCase() || "A";
+  if (loading) {
+    return (
+      <main className="dashboard-profile-page">
+        <p>Loading profile...</p>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="dashboard-profile-page">
+        <p>Failed to load profile</p>
+      </main>
+    );
+  }
 
   const profileDetails = [
     {
       icon: Mail,
       label: "Email",
-      value: email,
-    },
-    {
-      icon: Phone,
-      label: "Phone",
-      value: "+91 98... ..420",
-    },
-    {
-      icon: MapPin,
-      label: "City",
-      value: "Hyderabad, India",
+      value: user.email,
     },
     {
       icon: GraduationCap,
-      label: "Target Exam",
-      value: targetExam,
+      label: "Class Level",
+      value: user.class_level || "Not specified",
     },
     {
       icon: BookOpen,
-      label: "Enrolled In",
-      value: "Elite Crash Course 2026",
+      label: "Target Exam",
+      value: user.target_exam,
+    },
+    {
+      icon: Crown,
+      label: "Account Status",
+      value: user.is_active ? "Active" : "Inactive",
     },
     {
       icon: Settings,
-      label: "Plan",
-      value: "Elite - Auto-renews 12 May 2026",
+      label: "Account Type",
+      value: user.role === "student" ? "Student" : "Admin",
     },
   ];
 
+  const getInitial = () => user.name.charAt(0).toUpperCase();
   return (
     <main className="dashboard-profile-page">
       <section className="dashboard-profile-hero">
@@ -79,12 +90,12 @@ function Profile() {
 
       <section className="dashboard-profile-content">
         <article className="dashboard-profile-summary-card">
-          <span className="dashboard-profile-large-avatar">{avatarLetter}</span>
-          <h2>{name}</h2>
-          <p>JEE 2026 Aspirant - Class {classLevel}</p>
+          <span className="dashboard-profile-large-avatar">{getInitial()}</span>
+          <h2>{user.name}</h2>
+          <p>{user.class_level ? `Class ${user.class_level}` : "JEE Aspirant"} - {user.target_exam}</p>
           <strong>
             <Crown size={15} aria-hidden="true" />
-            Elite Subscription - Active
+            Premium Access - Active
           </strong>
         </article>
 

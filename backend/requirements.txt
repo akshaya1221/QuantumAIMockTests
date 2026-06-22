@@ -1,8 +1,15 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-dotenv
 passlib[bcrypt]
-bcrypt==4.0.1
+bcrypt
 python-jose[cryptography]
 sqlmodel
 email-validator
+pydantic
+pydantic-settings
+python-multipart
+pytest
+httpx
+aiofiles
+

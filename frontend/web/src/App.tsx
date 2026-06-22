@@ -65,7 +65,6 @@ function DashboardRoute({ children }: { children: ReactElement }) {
 }
 
 
-
 function AppShell() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");

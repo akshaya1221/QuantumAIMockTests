@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
-import { apiRequest } from "../api";
+import { api } from "../services/api";
 
 type LoginProps = {
   initialMode?: "login" | "signup";
@@ -26,45 +26,27 @@ function Login({ initialMode = "login" }: LoginProps) {
 
     try {
       if (isSignup) {
-        await apiRequest<{ message: string }>("/api/auth/signup", {
-          method: "POST",
-          auth: false,
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-            class_level: classLevel,
-            target_exam: targetExam,
-          }),
-        });
-
-        localStorage.setItem(
-          "current_user",
-          JSON.stringify({
-            name,
-            email,
-            class_level: classLevel,
-            target_exam: targetExam,
-          }),
-        );
+        // Sign up the user
+        const signupResponse = await api.signup(name, email, password, classLevel, targetExam);
+        
+        // Store user data
+        localStorage.setItem("current_user", JSON.stringify(signupResponse.user));
       }
 
-      const loginResponse = await apiRequest<{ access_token: string }>("/api/auth/login", {
-        method: "POST",
-        auth: false,
-        body: JSON.stringify({ email, password }),
-      });
-
+      // Login to get token
+      const loginResponse = await api.login(email, password);
+      
+      // Store the access token
       localStorage.setItem("access_token", loginResponse.access_token);
-
-      const profile = await apiRequest<{
-        name: string;
-        email: string;
-        class_level: string;
-        target_exam: string;
-      }>("/api/auth/me");
-
-      localStorage.setItem("current_user", JSON.stringify(profile));
+      
+      // Fetch and store current user data
+      const currentUser = await api.getCurrentUser();
+      localStorage.setItem("current_user", JSON.stringify(currentUser));
+      
+      // Initialize activity array
+      if (!localStorage.getItem("user_activities")) {
+        localStorage.setItem("user_activities", JSON.stringify([]));
+      }
       window.dispatchEvent(new Event("auth-change"));
       navigate("/dashboard");
     } catch (requestError) {

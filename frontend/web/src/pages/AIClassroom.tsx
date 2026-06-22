@@ -405,7 +405,7 @@ function AIClassroom() {
       setIsSpeaking(false);
       setDoubtResponse(null);
       setCurrentTime(0);
-      lastSentenceIndexRef.current = -1;
+      lastSentenceIndexRef.current = "-1";
       
       // Reset quiz
       const quiz = getQuizForTopic(selectedSubject, selectedTopic);
@@ -578,7 +578,7 @@ function AIClassroom() {
     setCurrentTime(newTime);
     
     // Recalculate slide spec and force voice update
-    lastSentenceIndexRef.current = -1;
+    lastSentenceIndexRef.current = "-1";
     if (isPlaying) {
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -591,7 +591,7 @@ function AIClassroom() {
     if (index < 0 || index >= slides.length) return;
     const start = slideSpecs.list[index]?.start || 0;
     setCurrentTime(start);
-    lastSentenceIndexRef.current = -1;
+    lastSentenceIndexRef.current = "-1";
     if (isPlaying) {
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -609,7 +609,7 @@ function AIClassroom() {
       if (val > slideSpecs.totalDuration) val = slideSpecs.totalDuration;
       return val;
     });
-    lastSentenceIndexRef.current = -1;
+    lastSentenceIndexRef.current = "-1";
     if (isPlaying && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
@@ -678,7 +678,7 @@ function AIClassroom() {
     }
     setDoubtResponse(null);
     // Force speech reload
-    lastSentenceIndexRef.current = -1;
+    lastSentenceIndexRef.current = "-1";
     setIsPlaying(true);
   }
 

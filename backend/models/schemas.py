@@ -123,3 +123,22 @@ class DoubtOut(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+
+
+class UserActivityCreate(BaseModel):
+    activity_type: str = Field(..., min_length=2)
+    title: str = Field(..., min_length=2)
+    subject: str = Field(..., min_length=2)
+    duration_seconds: Optional[int] = None
+    score: Optional[float] = None
+
+
+class UserActivityOut(BaseModel):
+    id: str
+    activity_type: str
+    title: str
+    subject: str
+    duration_seconds: Optional[int]
+    score: Optional[float]
+    created_at: datetime
+

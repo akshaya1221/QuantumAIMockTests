@@ -233,7 +233,6 @@ function MockTest({ dashboardMode = false }: { dashboardMode?: boolean }) {
       if (activeDashboardFilter === "All") return true;
       return test.status === activeDashboardFilter || test.type === activeDashboardFilter;
     });
-
     return (
       <main className="mock-tests-page dashboard-mock-tests-page">
         <section className="dashboard-mock-hero">

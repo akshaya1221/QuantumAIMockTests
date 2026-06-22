@@ -60,3 +60,16 @@ class Doubt(SQLModel, table=True):
     status: str = Field(default="open", nullable=False, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class UserActivity(SQLModel, table=True):
+    id: str = Field(default_factory=uuid_str, primary_key=True, index=True)
+    user_id: str = Field(foreign_key="user.id", nullable=False, index=True)
+    activity_type: str = Field(nullable=False)  # exam, course, doubt, video, practice
+    title: str = Field(nullable=False)
+    subject: str = Field(nullable=False)
+    duration_seconds: Optional[int] = None
+    score: Optional[float] = None
+    extra_info: Optional[dict] = Field(sa_column=Column(JSON), default_factory=dict)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
+

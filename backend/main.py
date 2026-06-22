@@ -1,11 +1,16 @@
 import os
+from collections import defaultdict
+import time
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session
+from sqlmodel import Session, select, SQLModel
 
 from db import create_db_and_tables, engine
+from storage import create_default_questions
+
+# Import routers
 from routes.admin import router as admin_router
 from routes.auth import router as auth_router
 from routes.content import router as content_router
@@ -13,21 +18,16 @@ from routes.doubts import router as doubts_router
 from routes.exam import router as exam_router
 from routes.progress import router as progress_router
 from routes.student import router as student_router
-from storage import create_default_questions
-
+from routes.ai import router as ai_router
+from routes.video_sessions import router as video_sessions_router
 
 load_dotenv()
 
 app = FastAPI(
-    title="Quantum AI IIT JEE Backend",
-    description="Backend for Quantum AI IIT JEE Mock Tests with authentication, exams, and progress tracking.",
+    title="VALLURI™ - Quantum AI IIT JEE Mock Tests",
+    description="Next-generation agentic AI-powered mock testing and personalized coaching platform",
     version="1.0.0",
 )
-
-# Custom Rate Limiter and Security Headers Middleware
-from collections import defaultdict
-import time
-from fastapi import Request, Response, status
 
 RATE_LIMIT_DURATION = 60  # seconds
 MAX_REQUESTS_PER_IP = 150  # limit per IP
@@ -89,7 +89,8 @@ app.include_router(progress_router)
 app.include_router(admin_router)
 app.include_router(doubts_router)
 app.include_router(content_router)
-
+app.include_router(ai_router)
+app.include_router(video_sessions_router)
 
 @app.on_event("startup")
 def on_startup():
@@ -97,7 +98,29 @@ def on_startup():
     with Session(engine) as session:
         create_default_questions(session)
 
-
 @app.get("/")
+def read_root():
+    return {
+        "message": "Welcome to VALLURI™ - Quantum AI IIT JEE Mock Tests",
+        "status": "Server is running",
+        "version": "1.0.0",
+        "features": [
+            "Mock Testing Engine",
+            "Video Lessons with Progress Tracking",
+            "1:1 Live Doubt Resolution",
+            "Virtual AI Teaching Agent",
+            "Performance Analytics",
+            "Rank Predictor"
+        ]
+    }
+
+@app.get("/api/health")
 def health_check():
-    return {"message": "Quantum AI IIT JEE Backend is running"}
+    return {
+        "status": "healthy",
+        "message": "All systems operational"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
